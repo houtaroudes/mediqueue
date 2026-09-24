@@ -1,0 +1,9 @@
+# local junk
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+
+# user uploads (runtime data, not code)
+uploads/*
+!uploads/.gitkeep

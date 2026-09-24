@@ -1,0 +1,13 @@
+# MediQueue Apache config (Phase 13)
+
+# never serve these folders directly
+RedirectMatch 403 ^/mediqueue/(includes|config|database|uploads)/.*$
+
+# block PHP execution inside uploads
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^uploads/.*\.php$ - [F,L]
+</IfModule>
+
+# disable directory listing
+Options -Indexes
