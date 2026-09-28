@@ -27,7 +27,7 @@ require __DIR__ . '/../includes/header.php';
                     <td><?php echo e(date('M j, g:i A', strtotime($l['created_at']))); ?></td>
                     <td><?php echo $l['user_name'] ? e($l['user_name'] . ' (' . $l['user_role'] . ')') : '<span class="muted">system</span>'; ?></td>
                     <td><code><?php echo e($l['action']); ?></code></td>
-                    <td><?php echo e($l['detail'] ?? '—'); ?></td>
+                    <td><?php echo e($l['detail'] ?? '-'); ?></td>
                 </tr>
             <?php endforeach; ?>
             <?php if (!$logs): ?><tr><td colspan="4" class="muted">No logs yet.</td></tr><?php endif; ?>

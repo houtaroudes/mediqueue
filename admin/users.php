@@ -83,7 +83,7 @@ require __DIR__ . '/../includes/header.php';
                             </form>
                         <?php endif; ?>
                     </td>
-                    <td><?php echo e($u['id_number'] ?? '—'); ?></td>
+                    <td><?php echo e($u['id_number'] ?? '-'); ?></td>
                     <td><span class="badge badge-<?php echo $u['status'] === 'active' ? 'confirmed' : 'cancelled'; ?>"><?php echo e($u['status']); ?></span></td>
                     <td>
                         <?php if ($u['id'] !== current_user()['id']): ?>

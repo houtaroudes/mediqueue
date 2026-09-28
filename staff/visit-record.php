@@ -72,7 +72,7 @@ require __DIR__ . '/../includes/header.php';
 ?>
 
 <section class="container page narrow">
-    <h1>New visit record — <?php echo e($patient['first_name'] . ' ' . $patient['last_name']); ?></h1>
+    <h1>New visit record - <?php echo e($patient['first_name'] . ' ' . $patient['last_name']); ?></h1>
 
     <?php foreach ($errors as $err): ?>
         <div class="alert alert-error"><?php echo e($err); ?></div>
@@ -87,7 +87,7 @@ require __DIR__ . '/../includes/header.php';
 
         <label>Link to appointment <span class="muted">(optional)</span>
             <select name="appointment_id">
-                <option value="">— none / walk-in —</option>
+                <option value="">- none / walk-in -</option>
                 <?php foreach ($recentAppts as $a): ?>
                     <option value="<?php echo (int) $a['id']; ?>"><?php echo e($a['appointment_date'] . ' - ' . $a['service_name']); ?></option>
                 <?php endforeach; ?>

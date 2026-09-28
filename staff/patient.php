@@ -69,7 +69,7 @@ require __DIR__ . '/../includes/header.php';
                 <?php foreach ($patients as $p): ?>
                     <tr>
                         <td><?php echo e($p['first_name'] . ' ' . $p['last_name']); ?></td>
-                        <td><?php echo e($p['id_number'] ?? '—'); ?></td>
+                        <td><?php echo e($p['id_number'] ?? '-'); ?></td>
                         <td><?php echo e($p['email'] ?? 'walk-in'); ?></td>
                         <td><a class="btn btn-sm btn-outline-dark" href="?id=<?php echo (int) $p['id']; ?>">Open</a></td>
                     </tr>
@@ -82,11 +82,11 @@ require __DIR__ . '/../includes/header.php';
     <?php if ($patient): ?>
         <h2><?php echo e($patient['first_name'] . ' ' . $patient['last_name']); ?></h2>
         <div class="card">
-            <p><strong>ID Number:</strong> <?php echo e($patient['id_number'] ?? '—'); ?> &nbsp;
-               <strong>Email:</strong> <?php echo e($patient['email'] ?? '—'); ?> &nbsp;
-               <strong>Birthdate:</strong> <?php echo e($patient['date_of_birth'] ?? '—'); ?> &nbsp;
-               <strong>Sex:</strong> <?php echo e($patient['sex'] ?? '—'); ?></p>
-            <p><strong>Emergency:</strong> <?php echo e($patient['emergency_name'] ?? '—'); ?> (<?php echo e($patient['emergency_phone'] ?? '—'); ?>)</p>
+            <p><strong>ID Number:</strong> <?php echo e($patient['id_number'] ?? '-'); ?> &nbsp;
+               <strong>Email:</strong> <?php echo e($patient['email'] ?? '-'); ?> &nbsp;
+               <strong>Birthdate:</strong> <?php echo e($patient['date_of_birth'] ?? '-'); ?> &nbsp;
+               <strong>Sex:</strong> <?php echo e($patient['sex'] ?? '-'); ?></p>
+            <p><strong>Emergency:</strong> <?php echo e($patient['emergency_name'] ?? '-'); ?> (<?php echo e($patient['emergency_phone'] ?? '-'); ?>)</p>
             <a class="btn btn-primary" href="<?php echo BASE_URL; ?>/staff/visit-record.php?patient_id=<?php echo (int) $patient['id']; ?>">New Visit Record</a>
         </div>
 
@@ -95,7 +95,7 @@ require __DIR__ . '/../includes/header.php';
             <table class="data-table">
                 <tr><th>Date</th><th>Recorded by</th><th>Notes</th><th>Treatment</th></tr>
                 <?php foreach ($records as $r): ?>
-                    <tr><td><?php echo e($r['visit_date']); ?></td><td><?php echo e($r['staff_name']); ?></td><td><?php echo e($r['visit_notes'] ?: '—'); ?></td><td><?php echo e($r['treatment'] ?: '—'); ?></td></tr>
+                    <tr><td><?php echo e($r['visit_date']); ?></td><td><?php echo e($r['staff_name']); ?></td><td><?php echo e($r['visit_notes'] ?: '-'); ?></td><td><?php echo e($r['treatment'] ?: '-'); ?></td></tr>
                 <?php endforeach; ?>
                 <?php if (!$records): ?><tr><td colspan="4" class="muted">No records.</td></tr><?php endif; ?>
             </table>

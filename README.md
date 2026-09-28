@@ -1,13 +1,13 @@
-# MediQueue — Campus Wellness Clinic Appointment and Queueing System
+# MediQueue - Campus Wellness Clinic Appointment and Queueing System
 
 Full-stack clinic appointment booking + walk-in queue management. PHP 8 / MySQL / vanilla JS, no frameworks. Built in 15 Modified-Waterfall phases.
 
 ## Run locally
 
-1. XAMPP is installed at `C:\xampp` with Apache + MySQL running as auto-start Windows services — just open the site
+1. XAMPP is installed at `C:\xampp` with Apache + MySQL running as auto-start Windows services - just open the site
 2. **Site:** http://localhost/mediqueue/
 3. **Health check:** http://localhost/mediqueue/health.php
-4. **Database tool:** http://localhost/phpmyadmin (root, no password — local dev only)
+4. **Database tool:** http://localhost/phpmyadmin (root, no password - local dev only)
 5. If the DB was wiped: re-import `database/mediqueue.sql` via phpMyAdmin
 
 ## Demo accounts (seed data)
@@ -29,7 +29,7 @@ Full-stack clinic appointment booking + walk-in queue management. PHP 8 / MySQL 
 - **Instructor tools:** weekly teaching schedule CRUD + recommended clinic slots that don't overlap classes (never auto-books)
 - **Records:** staff-only visit records; patients see their own history
 - **Notifications:** internal inbox with unread badge; every booking/call/status change notifies the user
-- **Admin:** users, services, duty schedules, appointments browser, reports (per-day, per-service, CSV export), clinic settings (hours, slot length, cancel window, queue format — all DB-driven, nothing hardcoded), activity logs
+- **Admin:** users, services, duty schedules, appointments browser, reports (per-day, per-service, CSV export), clinic settings (hours, slot length, cancel window, queue format - all DB-driven, nothing hardcoded), activity logs
 - **Security:** prepared statements everywhere, password_hash, CSRF token auto-injected into every POST form and verified, security headers, .htaccess blocks on config/includes/database/uploads, friendly errors (never SQL)
 
 ## Project layout

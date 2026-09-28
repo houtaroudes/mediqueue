@@ -17,14 +17,14 @@ require __DIR__ . '/includes/header.php';
         <div>
             <h1>The clinic line, on your screen.</h1>
             <p class="hero-sub">
-                Book a slot at the <?php echo e(CLINIC_NAME); ?> or walk in and take a number —
+                Book a slot at the <?php echo e(CLINIC_NAME); ?> or walk in and take a number -
                 then watch the board instead of the door.
             </p>
             <div class="hero-actions">
                 <a href="<?php echo BASE_URL; ?>/user/book-appointment.php" class="btn btn-primary">Book an Appointment</a>
                 <a href="<?php echo BASE_URL; ?>/user/queue.php" class="btn btn-outline">Join Walk-in Queue</a>
             </div>
-            <p class="hero-note">New here? <a href="<?php echo BASE_URL; ?>/register.php">Create an account</a> — it takes a minute.</p>
+            <p class="hero-note">New here? <a href="<?php echo BASE_URL; ?>/register.php">Create an account</a> - it takes a minute.</p>
         </div>
 
         <div class="board" data-board data-feed="<?php echo e(BASE_URL); ?>/queue-status.php"
@@ -72,7 +72,7 @@ require __DIR__ . '/includes/header.php';
     <div class="card feature-step">
         <span class="step-num" aria-hidden="true">3</span>
         <h3>Step in when called</h3>
-        <p>The board calls your number — no standing in line, no missing your turn.</p>
+        <p>The board calls your number - no standing in line, no missing your turn.</p>
     </div>
 </section>
 

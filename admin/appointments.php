@@ -73,7 +73,7 @@ require __DIR__ . '/../includes/header.php';
                     <td><?php echo e($a['patient_name']); ?></td>
                     <td><?php echo e($a['service_name']); ?></td>
                     <td><span class="badge badge-<?php echo e($a['status']); ?>"><?php echo e($a['status']); ?></span></td>
-                    <td><?php echo e($a['notes'] ?: '—'); ?></td>
+                    <td><?php echo e($a['notes'] ?: '-'); ?></td>
                 </tr>
             <?php endforeach; ?>
             <?php if (!$appointments): ?><tr><td colspan="6" class="muted">No appointments match.</td></tr><?php endif; ?>

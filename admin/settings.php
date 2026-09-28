@@ -51,7 +51,7 @@ require __DIR__ . '/../includes/header.php';
 
 <section class="container page narrow">
     <h1>Clinic settings</h1>
-    <p class="muted">These rules drive booking, cancellation, and queue behavior everywhere in the system — nothing is hardcoded.</p>
+    <p class="muted">These rules drive booking, cancellation, and queue behavior everywhere in the system - nothing is hardcoded.</p>
 
     <form method="post" class="card form">
         <?php foreach ($editable as $key => $label): ?>

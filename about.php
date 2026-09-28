@@ -10,7 +10,7 @@ require __DIR__ . '/includes/header.php';
 
     <div class="card">
         <p><?php echo e(CLINIC_NAME); ?> provides basic health services to students, faculty, and staff
-            of the campus. To make visits faster and fairer, the clinic uses <strong>MediQueue</strong> —
+            of the campus. To make visits faster and fairer, the clinic uses <strong>MediQueue</strong> -
             a simple online system for appointments and walk-in queuing.</p>
     </div>
 

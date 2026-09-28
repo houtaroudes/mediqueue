@@ -10,7 +10,7 @@ require __DIR__ . '/includes/header.php';
 
     <div class="card">
         <h3><?php echo e(CLINIC_NAME); ?></h3>
-        <p><strong>Phone:</strong> (046) 000-0000 <span class="muted">(placeholder — update with real number)</span></p>
+        <p><strong>Phone:</strong> (046) 000-0000 <span class="muted">(placeholder - update with real number)</span></p>
         <p><strong>Email:</strong> clinic@campus.edu <span class="muted">(placeholder)</span></p>
         <p><strong>Location:</strong> Admin Building Ground Floor</p>
     </div>
@@ -24,7 +24,7 @@ require __DIR__ . '/includes/header.php';
     <div class="card">
         <h3>Account help</h3>
         <p>Forgot your password or can't log in? Visit the clinic front desk with your student
-            or employee ID — staff can verify and reset your access.</p>
+            or employee ID - staff can verify and reset your access.</p>
     </div>
 </section>
 

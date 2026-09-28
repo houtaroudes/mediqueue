@@ -67,8 +67,8 @@ require __DIR__ . '/../includes/header.php';
 <section class="container page">
     <h1>Recommended clinic slots</h1>
     <p class="muted">
-        Clinic hours <?php echo e($openTime); ?>–<?php echo e($closeTime); ?>, <?php echo (int) $interval; ?>-minute slots.
-        Slots that overlap your classes are marked with the conflicting class. Booking still needs your confirmation —
+        Clinic hours <?php echo e($openTime); ?>-<?php echo e($closeTime); ?>, <?php echo (int) $interval; ?>-minute slots.
+        Slots that overlap your classes are marked with the conflicting class. Booking still needs your confirmation -
         nothing is ever auto-booked.
     </p>
 

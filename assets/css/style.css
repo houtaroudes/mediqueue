@@ -1,5 +1,5 @@
 /* ============================================================
-   MediQueue — "Clinic Signal"
+   MediQueue - "Clinic Signal"
    Design language borrowed from clinic signage and the queue
    board itself: flat sign-face panels, hairline borders, one
    amber signal color. Boldness lives only in the board/ticket.
@@ -56,7 +56,7 @@
     --board: #141B18;        /* LED board housing */
     --ink: #17231E;          /* spruce-black text */
     --ink-soft: #47534C;     /* secondary text on paper */
-    --amber: #FFB100;        /* LED amber — the one signal color */
+    --amber: #FFB100;        /* LED amber - the one signal color */
     --amber-deep: #E09600;   /* amber, pressed */
     --amber-ink: #201800;    /* text on amber */
     --line: #D9DFD6;         /* hairline borders */

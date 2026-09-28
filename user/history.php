@@ -50,8 +50,8 @@ require __DIR__ . '/../includes/header.php';
                         <td><?php echo e($r['visit_date']); ?></td>
                         <td><?php echo e($r['service_name'] ?? 'Walk-in'); ?></td>
                         <td><?php echo e($r['staff_name']); ?></td>
-                        <td><?php echo e($r['visit_notes'] ?: '—'); ?></td>
-                        <td><?php echo e($r['treatment'] ?: '—'); ?></td>
+                        <td><?php echo e($r['visit_notes'] ?: '-'); ?></td>
+                        <td><?php echo e($r['treatment'] ?: '-'); ?></td>
                     </tr>
                 <?php endforeach; ?>
             </table>

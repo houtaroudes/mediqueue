@@ -91,7 +91,7 @@ require __DIR__ . '/../includes/header.php';
             <?php foreach ($services as $s): ?>
                 <tr>
                     <td><?php echo e($s['name']); ?></td>
-                    <td><?php echo e($s['description'] ?? '—'); ?></td>
+                    <td><?php echo e($s['description'] ?? '-'); ?></td>
                     <td><?php echo (int) $s['duration_minutes']; ?> min</td>
                     <td><span class="badge badge-<?php echo $s['is_active'] ? 'confirmed' : 'cancelled'; ?>"><?php echo $s['is_active'] ? 'active' : 'hidden'; ?></span></td>
                     <td class="actions-cell">

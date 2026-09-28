@@ -130,14 +130,14 @@ require __DIR__ . '/../includes/header.php';
         }
         ?>
         <?php if ($serving): ?>
-            <p class="queue-number-sm"><?php echo e($serving['queue_number']); ?> — <?php echo e($serving['patient_name']); ?></p>
+            <p class="queue-number-sm"><?php echo e($serving['queue_number']); ?> - <?php echo e($serving['patient_name']); ?></p>
             <form method="post" class="inline">
                 <input type="hidden" name="action" value="complete">
                 <input type="hidden" name="entry_id" value="<?php echo (int) $serving['id']; ?>">
                 <button class="btn btn-primary">Complete Consultation</button>
             </form>
         <?php elseif ($called): ?>
-            <p class="queue-number-sm"><?php echo e($called['queue_number']); ?> — <?php echo e($called['patient_name']); ?> <span class="muted">(called)</span></p>
+            <p class="queue-number-sm"><?php echo e($called['queue_number']); ?> - <?php echo e($called['patient_name']); ?> <span class="muted">(called)</span></p>
             <form method="post" class="inline">
                 <input type="hidden" name="action" value="start_consult">
                 <input type="hidden" name="entry_id" value="<?php echo (int) $called['id']; ?>">
@@ -175,7 +175,7 @@ require __DIR__ . '/../includes/header.php';
                         <?php elseif (in_array($en['status'], array('waiting', 'called'), true)): ?>
                             <form method="post" class="inline" onsubmit="return confirm('Cancel this entry?');"><input type="hidden" name="action" value="cancel"><input type="hidden" name="entry_id" value="<?php echo (int) $en['id']; ?>"><button class="btn btn-sm btn-danger">Cancel</button></form>
                         <?php else: ?>
-                            <span class="muted">—</span>
+                            <span class="muted">-</span>
                         <?php endif; ?>
                     </td>
                 </tr>

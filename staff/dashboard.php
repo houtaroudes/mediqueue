@@ -64,7 +64,7 @@ require __DIR__ . '/../includes/header.php';
             <h2>Queue now</h2>
             <div class="card">
                 <?php if ($serving): ?>
-                    <p>Now serving: <strong><?php echo e($serving['queue_number']); ?></strong> — <?php echo e($serving['patient_name']); ?></p>
+                    <p>Now serving: <strong><?php echo e($serving['queue_number']); ?></strong> - <?php echo e($serving['patient_name']); ?></p>
                 <?php else: ?>
                     <p class="muted">Nobody in consultation.</p>
                 <?php endif; ?>
