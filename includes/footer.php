@@ -8,5 +8,9 @@
 </footer>
 
 <script src="<?php echo BASE_URL; ?>/assets/js/main.js"></script>
+<?php if (!empty($GLOBALS['mq_qr_frame'])): ?>
+<script src="<?php echo BASE_URL; ?>/assets/js/qrcode.min.js"></script>
+<script src="<?php echo BASE_URL; ?>/assets/js/qr.js"></script>
+<?php endif; ?>
 </body>
 </html>

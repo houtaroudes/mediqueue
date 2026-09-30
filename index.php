@@ -8,6 +8,9 @@ require_once __DIR__ . '/includes/board.php';
 // live queue status for the landing board (page must survive with the DB down)
 $board = mq_board_status();
 
+// the walk-in page behind the QR code
+$joinUrl = mq_join_url();
+
 $page_title = 'Campus Clinic Appointments and Queueing';
 require __DIR__ . '/includes/header.php';
 ?>
@@ -43,6 +46,7 @@ require __DIR__ . '/includes/header.php';
                         <?php echo $board['status'] === 'in_consultation' ? 'In consultation' : 'Called to the consultation room'; ?>
                         <?php if ($board['waiting'] > 0): ?> &middot; <?php echo (int) $board['waiting']; ?> waiting<?php endif; ?>
                     </p>
+                    <p class="board-wait"><?php echo e($board['wait_text']); ?></p>
                 <?php else: ?>
                     <div class="board-number board-idle">--:--</div>
                     <p class="board-status">No one is being served right now.</p>
@@ -67,7 +71,7 @@ require __DIR__ . '/includes/header.php';
     <div class="card feature-step">
         <span class="step-num" aria-hidden="true">2</span>
         <h3>Take a number</h3>
-        <p>Walk-ins get a queue ticket like A001 and watch their status live.</p>
+        <p>Walk-ins scan the QR code at the door or take a ticket like A001, then watch their status live.</p>
     </div>
     <div class="card feature-step">
         <span class="step-num" aria-hidden="true">3</span>
@@ -80,9 +84,11 @@ require __DIR__ . '/includes/header.php';
     <div class="card hours-card">
         <h3>Clinic Hours</h3>
         <table class="hours-table">
-            <tr><td>Monday - Friday</td><td>8:00 AM - 5:00 PM</td></tr>
-            <tr><td>Saturday</td><td>8:00 AM - 12:00 NN</td></tr>
-            <tr><td>Sunday &amp; Holidays</td><td>Closed</td></tr>
+            <?php /* rendered from the same settings the booking rules use, so
+                     the public hours can never drift from what the clinic set */ ?>
+            <?php foreach (clinic_hours_rows() as $row): ?>
+                <tr><td><?php echo e($row[0]); ?></td><td><?php echo e($row[1]); ?></td></tr>
+            <?php endforeach; ?>
         </table>
     </div>
     <div class="card facts-card">
@@ -92,6 +98,12 @@ require __DIR__ . '/includes/header.php';
             <li>Instructors get suggested slots that don't clash with classes.</li>
             <li>Your visit history stays private in your account.</li>
         </ul>
+    </div>
+    <div class="card qr-card">
+        <h3>Walk in without the paper</h3>
+        <?php qr_frame($joinUrl); ?>
+        <p class="qr-caption">Scan at the clinic door to take a number,
+            or open <a href="<?php echo e($joinUrl); ?>">join.php</a> on your phone.</p>
     </div>
 </section>
 

@@ -1,0 +1,5 @@
+# static assets only; everything here is the public join page
+<FilesMatch "\.(php)$">
+    Require all granted
+</FilesMatch>
+Options -Indexes

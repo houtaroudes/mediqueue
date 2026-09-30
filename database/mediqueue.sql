@@ -89,10 +89,18 @@ CREATE TABLE queue_entries (
     called_at       DATETIME NULL,
     completed_at    DATETIME NULL,
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- explicit queue order. A skipped patient is moved to the back by bumping
+    -- this, because ordering on id alone meant Call Next re-called them.
+    enqueued_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    -- anonymous QR walk-in receipt: the ?t= token on public/join.php that
+    -- brings a visitor back to their own ticket (NULL for account queues)
+    join_token      CHAR(32) NULL,
     CONSTRAINT fk_queue_patient FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
     CONSTRAINT fk_queue_appt    FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE SET NULL,
     UNIQUE KEY uq_queue_number (queue_date, queue_number),
-    INDEX idx_queue_date_status (queue_date, status)
+    UNIQUE KEY uq_join_token (join_token),
+    INDEX idx_queue_date_status (queue_date, status),
+    INDEX idx_queue_order (queue_date, status, enqueued_at)
 ) ENGINE=InnoDB;
 
 -- ---------- staff_schedules (clinic duty) ----------
@@ -184,11 +192,16 @@ INSERT INTO patients (user_id, first_name, last_name, date_of_birth, sex, emerge
 (5, 'Dino', 'Cruz',  '2004-03-15', 'male',   'Maria Cruz',   '09181111111'),
 (6, 'Ella', 'Ramos', '2005-08-22', 'female', 'Pablo Ramos',  '09182222222');
 
+-- The four clinic services plus the three consultation types named in the
+-- project brief (General Checkup, Follow-up Checkup, Medical Clearance).
 INSERT INTO services (name, description, duration_minutes) VALUES
 ('General Consultation', 'Check-up and basic medical advice', 30),
 ('Dental Check-up',      'Tooth cleaning and oral exam',      45),
 ('First Aid / Injury',   'Treatment for minor injuries',      20),
-('Health Certificate',   'Medical certificate issuance',      15);
+('Health Certificate',   'Medical certificate issuance',      15),
+('General Checkup',      'Routine consultation with the clinic nurse', 30),
+('Follow-up Checkup',    'Progress review after a previous visit',     30),
+('Medical Clearance',    'Clearance exam for sports, work, or enrollment', 20);
 
 INSERT INTO staff_schedules (staff_id, schedule_date, start_time, end_time) VALUES
 (2, CURDATE() + INTERVAL 0 DAY, '08:00:00', '17:00:00'),
@@ -207,6 +220,9 @@ INSERT INTO teaching_schedules (instructor_id, day_of_week, start_time, end_time
 INSERT INTO settings (setting_key, setting_value) VALUES
 ('clinic_open_time',   '08:00'),
 ('clinic_close_time',  '17:00'),
+('saturday_open_time', '08:00'),
+('saturday_close_time','12:00'),
+('closed_days',        '7'),
 ('slot_interval_min',  '30'),
 ('booking_advance_days','14'),
 ('cancel_min_hours',   '2'),
@@ -215,4 +231,5 @@ INSERT INTO settings (setting_key, setting_value) VALUES
 ('priority_instructor','1'),
 ('priority_staff',     '2'),
 ('priority_student',   '3'),
-('max_daily_bookings', '1');
+('max_daily_bookings', '1'),
+('avg_service_min',    '15');

@@ -28,6 +28,7 @@ const MediQueue = {
 
         const numberEl = board.querySelector('.board-number');
         const statusEl = board.querySelector('.board-status');
+        const waitEl = board.querySelector('.board-wait');
         const nextEl = board.querySelector('.board-next-item');
         const nextWrap = board.querySelector('.board-next');
         const timeEl = board.querySelector('.board-time');
@@ -65,6 +66,10 @@ const MediQueue = {
                 } else {
                     statusEl.textContent = 'No one is being served right now.';
                 }
+            }
+
+            if (waitEl) {
+                waitEl.textContent = num ? (data.wait_text || '') : '';
             }
 
             if (nextEl && nextWrap) {
@@ -130,6 +135,21 @@ const MediQueue = {
         }
     },
 
+    // staff queue, student ticket, and public QR ticket: reload the page every
+    // few seconds so the room sees new numbers without touching anything.
+    // Safe with the browser's resend prompt because every action here is PRG:
+    // posts redirect back to the GET page, so a reload never resubmits.
+    initLiveRefresh: function () {
+        const live = document.querySelector('[data-live]');
+        if (!live) return;
+
+        const secs = parseInt(live.getAttribute('data-live'), 10) || 15;
+        setInterval(function () {
+            // a hidden tab would just burn requests; reload when it is seen again
+            if (!document.hidden) location.reload();
+        }, secs * 1000);
+    },
+
     // sign-out interstitial: board winds down to --:-- then navigates
     initBye: function () {
         const bye = document.querySelector('.bye');
@@ -165,5 +185,6 @@ document.addEventListener('DOMContentLoaded', function () {
     MediQueue.initNav();
     MediQueue.initBoard();
     MediQueue.initSubmitButtons();
+    MediQueue.initLiveRefresh();
     MediQueue.initBye();
 });

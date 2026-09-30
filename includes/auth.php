@@ -39,6 +39,14 @@ function has_role($roles) {
 // guard: must be logged in
 function require_login() {
     if (!is_logged_in()) {
+        // Remember where they were headed and say why they landed on the login
+        // page. Without this, the landing page's own calls to action dropped
+        // first-time visitors on a bare form with no explanation.
+        $path = $_SERVER['REQUEST_URI'] ?? '';
+        if (is_string($path) && $path !== '' && $path[0] === '/' && strpos($path, '//') !== 0) {
+            $_SESSION['intended_path'] = $path;
+        }
+        flash_set('info', 'Please log in to continue.');
         redirect(BASE_URL . '/login.php');
     }
 }

@@ -52,7 +52,7 @@ $MYSQL -u root mediqueue -e "
   DELETE FROM services WHERE name = 'Smoke Test Service';
   DELETE FROM teaching_schedules WHERE class_name = 'TEST 999';
   DELETE FROM staff_schedules WHERE schedule_date = CURDATE() + INTERVAL 3 DAY AND start_time = '09:00:00';
-  DELETE l FROM activity_logs l WHERE l.detail LIKE '%smoke%' OR l.detail LIKE '%TEST 999%';
+  DELETE l FROM activity_logs l WHERE l.detail LIKE '%smoke%' OR l.detail LIKE '%TEST 999%' OR l.detail LIKE 'number=A00%';
 " && echo "state reset OK"
 
 echo "== Public pages =="
@@ -75,10 +75,17 @@ echo "== Student flow =="
 login "$J" "d.cruz@student.edu" "Student@123"
 get "$J" "$B/user/dashboard.php"; check "student dashboard loads" "$T/last.html" "Upcoming appointments"
 get "$J" "$B/user/book-appointment.php"; check "booking form loads" "$T/last.html" "Confirm Booking"
+check "brief services offered (Follow-up Checkup)" "$T/last.html" "Follow-up Checkup"
 SVC_ID=$(grep -o 'option value="[0-9][0-9]*"' "$T/last.html" | head -1 | sed 's/option value="//;s/"//')
 BOOKDATE=$(date -d '+2 days' +%Y-%m-%d)
 post "$J" "$B/user/book-appointment.php" "service_id=$SVC_ID" "date=$BOOKDATE" "slot=10:00" "notes=smoke test" "confirm=1"
 check "booking created" "$T/last.html" "Appointment booked"
+# a hand-made POST must not get a slot the form never offers
+post "$J" "$B/user/book-appointment.php" "service_id=$SVC_ID" "date=$(date -d 'next monday' +%Y-%m-%d)" "slot=09:07" "notes=off grid" "confirm=1"
+check "off-grid slot rejected" "$T/last.html" "not one of the offered slots"
+# closed days come from settings (default 7 = Sunday)
+post "$J" "$B/user/book-appointment.php" "service_id=$SVC_ID" "date=$(date -d 'next sunday' +%Y-%m-%d)" "slot=10:00" "notes=closed day" "confirm=1"
+check "closed day rejected" "$T/last.html" "The clinic is closed on"
 get "$J" "$B/user/appointments.php"; check "appointment listed" "$T/last.html" "$BOOKDATE"
 post "$J" "$B/user/queue.php" "action=join"
 check "queue joined (A001)" "$T/last.html" "A001"
@@ -136,9 +143,76 @@ check "schedule added" "$T/last.html" "Schedule added"
 get "$A" "$B/admin/appointments.php"; check "appointments page loads" "$T/last.html" "All appointments"
 get "$A" "$B/admin/reports.php"; check "reports page loads" "$T/last.html" "Per-service load"
 get "$A" "$B/admin/settings.php"; check "settings page loads" "$T/last.html" "Clinic opens"
-post "$A" "$B/admin/settings.php" "clinic_open_time=08:00" "clinic_close_time=17:00" "slot_interval_min=30" "booking_advance_days=14" "cancel_min_hours=2" "queue_prefix=A" "queue_pad_len=3" "max_daily_bookings=1"
+post "$A" "$B/admin/settings.php" "clinic_open_time=08:00" "clinic_close_time=17:00" "saturday_open_time=08:00" "saturday_close_time=12:00" "closed_days=7" "slot_interval_min=30" "booking_advance_days=14" "cancel_min_hours=2" "queue_prefix=A" "queue_pad_len=3" "max_daily_bookings=1"
 check "settings saved" "$T/last.html" "Settings saved"
+
+# the public hours table must follow the settings, not a literal in the page
+post "$A" "$B/admin/settings.php" "clinic_open_time=07:30" "clinic_close_time=16:30"
+curl -s "$B/" -o "$T/last.html"; check "landing hours follow settings" "$T/last.html" "7:30 AM - 4:30 PM"
+post "$A" "$B/admin/settings.php" "clinic_open_time=08:00" "clinic_close_time=17:00"
+curl -s "$B/" -o "$T/last.html"; check "landing hours restored" "$T/last.html" "8:00 AM - 5:00 PM"
 get "$A" "$B/admin/activity-logs.php"; check "activity logs load" "$T/last.html" "Activity logs"
+
+echo "== Queue order: skip must send the patient to the back =="
+# the student joins first (A003), the instructor second (A004)
+# assert on the join confirmation, not the bare number: the number also shows
+# up in the page counters, so a bare "A004" check passes even when the join is
+# refused and the queue is one shorter than the test believes
+post "$J" "$B/user/queue.php" "action=join"
+check "student rejoined queue (A003)" "$T/last.html" "Your number is A003"
+post "$I" "$B/user/queue.php" "action=join"
+check "instructor rejoined queue (A004)" "$T/last.html" "Your number is A004"
+post "$S" "$B/staff/queue-management.php" "action=call_next"
+check "call next -> A003" "$T/last.html" "Called A003"
+ENTRY_ID=$(grep -o 'name="entry_id" value="[0-9]*"' "$T/last.html" | head -1 | sed 's/.*value="//;s/"//')
+post "$S" "$B/staff/queue-management.php" "action=skip" "entry_id=$ENTRY_ID"
+# the flash is escaped on output, so the arrow arrives as &gt;
+check "skip returned A003 to waiting" "$T/last.html" "Entry A003 -&gt; waiting"
+post "$S" "$B/staff/queue-management.php" "action=call_next"
+# the regression this guards: with id ordering this said "Called A003" again
+check "call next after skip -> A004" "$T/last.html" "Called A004"
+# every Call Next also nudges the waiting account holder behind the call;
+# the instructor was behind A001 earlier in this script, so the nudge exists
+get "$I" "$B/user/notifications.php"; check "next-in-line nudge reached the waiting account" "$T/last.html" "You are next in line"
+
+echo "== QR walk-in: an anonymous visitor takes a number =="
+rm -f /tmp/mq_guest_jar
+post /tmp/mq_guest_jar "$B/public/join.php" "action=join"
+check "guest takes a number (A005)" "$T/last.html" "Your number is A005"
+check "guest ticket shows its position" "$T/last.html" "ahead of you"
+# mysql.exe prints CRLF on Windows; the \r would break the 32-hex token check
+GTOK=$($MYSQL -u root mediqueue -N -s -e "SELECT join_token FROM queue_entries WHERE queue_date=CURDATE() AND queue_number='A005'" | tr -d '\r')
+# harvest the CSRF token from the BARE page: join.php?t=... shows the ticket
+# view, which has no form, so post()'s own harvest would come back empty
+GTOKEN=$(curl -s -b /tmp/mq_guest_jar "$B/public/join.php" | grep -o 'name="csrf_token" value="[^"]*"' | head -1 | sed 's/.*value="//;s/"//')
+curl -s -L -b /tmp/mq_guest_jar -c /tmp/mq_guest_jar "$B/public/join.php?t=$GTOK" \
+  --data-urlencode "csrf_token=$GTOKEN" --data-urlencode "action=join" -o "$T/last.html"
+check "same receipt returns the same ticket" "$T/last.html" "already in the queue today"
+curl -s "$B/" -o "$T/last.html"
+check "landing shows the wait estimate line" "$T/last.html" "board-wait"
+curl -s "$B/queue-status.php" -o "$T/last.html"
+check "board feed carries the estimate" "$T/last.html" "wait_min"
+get "$S" "$B/staff/queue-management.php"; check "staff page shows the walk-in QR" "$T/last.html" "Walk-in QR code"
+
+ echo "== Login guard explains itself and returns you back =="
+rm -f /tmp/mq_guard_jar
+curl -s -L -c /tmp/mq_guard_jar -b /tmp/mq_guard_jar "$B/user/queue.php" -o "$T/last.html"
+check "login page says why" "$T/last.html" "Please log in to continue"
+GTOKEN=$(grep -o 'name="csrf_token" value="[^"]*"' "$T/last.html" | head -1 | sed 's/.*value="//;s/"//')
+curl -s -L -c /tmp/mq_guard_jar -b /tmp/mq_guard_jar "$B/login.php" \
+  --data-urlencode "csrf_token=$GTOKEN" \
+  --data-urlencode "email=d.cruz@student.edu" \
+  --data-urlencode "password=Student@123" -o "$T/last.html"
+check "login returns to the interrupted page" "$T/last.html" "Your number today"
+# but a role that cannot open that page must not be sent into a 403
+rm -f /tmp/mq_guard2
+curl -s -L -c /tmp/mq_guard2 -b /tmp/mq_guard2 "$B/user/queue.php" -o "$T/last.html"
+GTOKEN=$(grep -o 'name="csrf_token" value="[^"]*"' "$T/last.html" | head -1 | sed 's/.*value="//;s/"//')
+curl -s -L -c /tmp/mq_guard2 -b /tmp/mq_guard2 "$B/login.php" \
+  --data-urlencode "csrf_token=$GTOKEN" \
+  --data-urlencode "email=a.reyes@campus.edu" \
+  --data-urlencode "password=Doctor@123" -o "$T/last.html"
+check "staff falls back to its dashboard, not a 403" "$T/last.html" "Clinic Staff Dashboard"
 
 echo "== Logout =="
 get "$J" "$B/logout.php"

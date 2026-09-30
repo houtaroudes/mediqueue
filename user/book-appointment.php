@@ -25,8 +25,6 @@ $date      = $_POST['date'] ?? '';
 $slot      = $_POST['slot'] ?? '';
 
 // settings-driven clinic rules (configurable, not hardcoded)
-$openTime  = get_setting('clinic_open_time', '08:00');
-$closeTime = get_setting('clinic_close_time', '17:00');
 $interval  = (int) get_setting('slot_interval_min', 30);
 $maxAdv    = (int) get_setting('booking_advance_days', 14);
 $maxDaily  = (int) get_setting('max_daily_bookings', 1);
@@ -35,24 +33,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
     // validate date
     $d = DateTime::createFromFormat('Y-m-d', $date);
     $today = new DateTime('today');
+    $bookWindow = null;
     if (!$d || $d->format('Y-m-d') !== $date) {
         $errors[] = 'Invalid date.';
     } elseif ($d < $today) {
         $errors[] = 'You cannot book a date in the past.';
     } elseif ($d > (clone $today)->modify("+$maxAdv days")) {
         $errors[] = "Bookings are only allowed within $maxAdv days.";
-    } elseif (in_array((int) $d->format('N'), array(7), true)) { // Sunday closed
-        $errors[] = 'The clinic is closed on Sundays.';
+    } else {
+        // closed days and the opening window both come from settings, so
+        // changing them changes booking instead of only the landing page
+        $bookWindow = clinic_window_for($date);
+        if ($bookWindow === null) {
+            $errors[] = 'The clinic is closed on ' . day_name_iso((int) $d->format('N')) . 's.';
+        }
     }
 
-    // validate slot
+    // validate slot: right format, inside that day's window, and on the
+    // slot_interval_min grid so a hand-made POST cannot book 09:07
     if (!preg_match('/^\d{2}:\d{2}$/', $slot)) {
         $errors[] = 'Invalid time slot.';
-    } else {
-        $slotTime = strtotime($slot);
-        if ($slotTime < strtotime($openTime) || $slotTime >= strtotime($closeTime)) {
-            $errors[] = "Slot must be between $openTime and $closeTime.";
-        }
+    } elseif ($bookWindow !== null && !slot_is_on_grid($slot, $bookWindow, $interval)) {
+        $errors[] = 'That time is not one of the offered slots. Please pick one from the list.';
     }
 
     // validate service
@@ -141,15 +143,18 @@ require __DIR__ . '/../includes/header.php';
             <select name="slot" required>
                 <option value="">-- choose a time --</option>
                 <?php
-                // build slots between open and close; skip past times today
-                for ($t = strtotime($openTime); $t < strtotime($closeTime); $t += $interval * 60) {
-                    $slotVal = date('H:i', $t);
-                    if ($date === date('Y-m-d') && $t < time()) continue;
-                    if (in_array((int) date('N', strtotime($date ?: 'next monday')), array(6), true) && $t >= strtotime('12:00')) {
-                        continue; // Saturday half-day
+                // slots come from that day's window in settings; past times are
+                // dropped today, and a closed day offers none at all
+                $formWindow = clinic_window_for($date !== '' ? $date : date('Y-m-d'));
+                if ($formWindow === null) {
+                    echo '<option value="">-- the clinic is closed that day --</option>';
+                } else {
+                    for ($t = strtotime($formWindow[0]); $t < strtotime($formWindow[1]); $t += $interval * 60) {
+                        $slotVal = date('H:i', $t);
+                        if ($date === date('Y-m-d') && $t < time()) continue;
+                        echo '<option value="' . $slotVal . '" ' . ($slot === $slotVal ? 'selected' : '') . '>'
+                            . date('g:i A', $t) . '</option>';
                     }
-                    echo '<option value="' . $slotVal . '" ' . ($slot === $slotVal ? 'selected' : '') . '>'
-                        . date('g:i A', $t) . '</option>';
                 }
                 ?>
             </select>

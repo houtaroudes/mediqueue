@@ -89,22 +89,26 @@ foreach ($stmt->get_result()->fetch_all(MYSQLI_ASSOC) as $row) {
 }
 $stmt->close();
 
-// people ahead of me
+// people ahead of me. Counted in queue order (enqueued_at), not id order:
+// a skipped patient was bumped to the back and must not be counted ahead.
 $ahead = 0;
 if ($myEntry && $myEntry['status'] === 'waiting') {
     $stmt = $db->prepare('SELECT COUNT(*) AS c FROM queue_entries
-        WHERE queue_date = CURDATE() AND status = "waiting" AND id < ?');
-    $stmt->bind_param('i', $myEntry['id']);
+        WHERE queue_date = CURDATE() AND status = "waiting"
+          AND (enqueued_at < ? OR (enqueued_at = ? AND id < ?))');
+    $stmt->bind_param('ssi', $myEntry['enqueued_at'], $myEntry['enqueued_at'], $myEntry['id']);
     $stmt->execute();
     $ahead = (int) $stmt->get_result()->fetch_assoc()['c'];
     $stmt->close();
 }
 
+$myWait = $ahead > 0 ? max(1, $ahead * mq_avg_service_min()) : 0;
+
 $page_title = 'Walk-in Queue';
 require __DIR__ . '/../includes/header.php';
 ?>
 
-<section class="container page narrow">
+<section class="container page narrow" data-live="12">
     <h1>Walk-in queue</h1>
 
     <?php if ($myEntry && in_array($myEntry['status'], array('waiting', 'called', 'in_consultation'), true)): ?>
@@ -114,7 +118,8 @@ require __DIR__ . '/../includes/header.php';
             <p class="status-<?php echo $myEntry['status'] === 'waiting' ? 'muted' : 'ok'; ?>">
                 Status: <strong><?php echo e(str_replace('_', ' ', $myEntry['status'])); ?></strong>
                 <?php if ($myEntry['status'] === 'waiting'): ?>
-                    &middot; <?php echo $ahead; ?> ahead of you
+                    &middot; <?php echo (int) $ahead; ?> ahead of you
+                    <?php if ($myWait > 0): ?> &middot; about <?php echo (int) $myWait; ?> min wait<?php endif; ?>
                 <?php endif; ?>
             </p>
             <?php if ($myEntry['status'] === 'waiting'): ?>

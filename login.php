@@ -39,7 +39,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 log_activity('auth.login', 'role=' . $user['role']);
                 flash_set('success', 'Welcome back, ' . $user['first_name'] . '! You are now logged in.');
-                redirect(dashboard_url($user['role']));
+
+                // Send them back to whatever the login guard interrupted, with
+                // two exceptions: a path that is not local, and one the role
+                // cannot open. Clinic staff bounced off a student page would
+                // otherwise be returned straight into a 403.
+                $intended = (string) ($_SESSION['intended_path'] ?? '');
+                unset($_SESSION['intended_path']);
+                $role = $user['role'];
+                $userAreaRoles = array('student', 'staff', 'instructor');
+                $roleCanOpen = !(strpos($intended, '/user/') !== false
+                    && !in_array($role, $userAreaRoles, true));
+                $isLocalPath = $intended !== '' && $intended[0] === '/'
+                    && strpos($intended, '//') !== 0
+                    && strpos($intended, 'login.php') === false;
+                if ($isLocalPath && $roleCanOpen) {
+                    redirect($intended);
+                }
+                redirect(dashboard_url($role));
             }
         } else {
             $error = 'Invalid email or password.'; // same msg for both = no hints
