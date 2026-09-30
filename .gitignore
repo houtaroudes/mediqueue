@@ -7,3 +7,10 @@ Thumbs.db
 # user uploads (runtime data, not code)
 uploads/*
 !uploads/.gitkeep
+
+# Credentials. config/config.php ships local dev defaults, so real database
+# passwords belong in an env file that git never sees.
+.env
+.env.*
+.vercel
+.npmrc
